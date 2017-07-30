@@ -42,6 +42,8 @@ defmodule LtsePoc.Mixfile do
       {:libcluster, "~> 2.1"},
       {:swarm, "~> 3.0"},
       {:gettext, "~> 0.11"},
+      {:benchee, "~> 0.9", only: :dev},
+      {:benchfella, "~> 0.3.0", only: :dev},
       {:cowboy, "~> 1.0"}
     ]
   end
