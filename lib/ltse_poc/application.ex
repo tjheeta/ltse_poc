@@ -12,6 +12,7 @@ defmodule LtsePoc.Application do
       #supervisor(LtsePoc.Repo, []),
       # Start the endpoint when the application starts
       supervisor(LtsePocWeb.Endpoint, []),
+      supervisor(LtsePoc.Exchange.Trade.WorkerSupervisor, []),
       # Start your own worker by calling: LtsePoc.Worker.start_link(arg1, arg2, arg3)
       # worker(LtsePoc.Worker, [arg1, arg2, arg3]),
     ]
