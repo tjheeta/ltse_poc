@@ -9,13 +9,16 @@ defmodule LtsePoc.Application do
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository
-      supervisor(LtsePoc.Repo, []),
       # Start the endpoint when the application starts
       supervisor(LtsePocWeb.Endpoint, []),
       supervisor(LtsePoc.Exchange.Trade.WorkerSupervisor, []),
       # Start your own worker by calling: LtsePoc.Worker.start_link(arg1, arg2, arg3)
       # worker(LtsePoc.Worker, [arg1, arg2, arg3]),
     ]
+    children = case Application.get_env(:ltse_poc, LtsePoc.Repo)[:enabled] do
+      nil -> children ++ [supervisor(LtsePoc.Repo, [])]
+      _ -> children
+    end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

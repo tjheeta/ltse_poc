@@ -56,4 +56,5 @@ config :ltse_poc, LtsePoc.Repo,
   database: "ltse_poc_test",
   hostname: "10.0.2.99",
   port: 5433,
+  enabled: false,
   pool_size: 10
