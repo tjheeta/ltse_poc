@@ -9,7 +9,7 @@ defmodule LtsePoc.Application do
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository
-      supervisor(LtsePoc.Repo, []),
+      #supervisor(LtsePoc.Repo, []),
       # Start the endpoint when the application starts
       supervisor(LtsePocWeb.Endpoint, []),
       # Start your own worker by calling: LtsePoc.Worker.start_link(arg1, arg2, arg3)
