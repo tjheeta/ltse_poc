@@ -1,0 +1,28 @@
+<h2>Show Trade</h2>
+
+<ul>
+
+  <li>
+    <strong>Email:</strong>
+    <%= @trade.email %>
+  </li>
+
+  <li>
+    <strong>Stock:</strong>
+    <%= @trade.stock %>
+  </li>
+
+  <li>
+    <strong>Volume:</strong>
+    <%= @trade.volume %>
+  </li>
+
+  <li>
+    <strong>Price:</strong>
+    <%= @trade.price %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: trade_path(@conn, :edit, @trade) %></span>
+<span><%= link "Back", to: trade_path(@conn, :index) %></span>

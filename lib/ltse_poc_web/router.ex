@@ -16,6 +16,7 @@ defmodule LtsePocWeb.Router do
   scope "/", LtsePocWeb do
     pipe_through :browser # Use the default browser stack
 
+    resources "/trades", TradeController
     get "/", PageController, :index
   end
 
