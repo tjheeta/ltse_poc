@@ -51,8 +51,9 @@ config :phoenix, :stacktrace_depth, 20
 # Configure your database
 config :ltse_poc, LtsePoc.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "ltse_poc_dev",
-  hostname: "localhost",
+  username: "testuser",
+  password: "testpass",
+  database: "ltse_poc_test",
+  hostname: "10.0.2.99",
+  port: 5433,
   pool_size: 10

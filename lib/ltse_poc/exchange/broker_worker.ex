@@ -179,7 +179,9 @@ defmodule LtsePoc.Exchange.Trade.BrokerWorker do
     case :gb_trees.lookup(price, state_tree_buys) do
       :none -> :gb_trees.insert(price, [{id, volume}], state_tree_buys)
       {:value, array_of_bids} -> :gb_trees.update( price,
-                                    array_of_bids ++ [{id, volume}],
+                                    #array_of_bids ++ [{id, volume}],
+                                    # TODO - tests should fail, but they don't, parsing out of order
+                                    [ {id, volume} | array_of_bids ] ,
                                     state_tree_buys
                                     )
     end
@@ -225,6 +227,7 @@ defmodule LtsePoc.Exchange.Trade.BrokerWorker do
     end
   end
 
+  # TODO - did I not tail-call optimize this?
   # returns volume_left, transactions, state_tree_buys
   def find_buyer_tree_iter({sell_id, price, volume}, transactions, state_tree_buys, iter) do
     case :gb_trees.next(iter) do

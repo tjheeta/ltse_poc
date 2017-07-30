@@ -34,6 +34,9 @@ POC Checkpoints:
 1) Deploy onto Kubernetes
 2) Verify that the ring hash kill/respawn actions work (no need for multiple fsm running)
 3) Bench the stock_fsm for some hopefully reasonable values.
+     - Results On a 2008 Core 2 Duo - 3.5 µs for each insert
+                                    - 1.6 µs for each match - probably will take 5-10 to make a trade (depends on many variables)
+       Which is much better than original estimate - the stock_fsm at 5e-6 => 200k qps for a single stock on a singleton
 4) GenStage to read from a file of events -> parsed transactions
 5) Journaling / replay / crash recovery actions.
 
