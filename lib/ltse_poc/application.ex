@@ -9,7 +9,7 @@ defmodule LtsePoc.Application do
     # Define workers and child supervisors to be supervised
     children = [
       # Start the Ecto repository
-      #supervisor(LtsePoc.Repo, []),
+      supervisor(LtsePoc.Repo, []),
       # Start the endpoint when the application starts
       supervisor(LtsePocWeb.Endpoint, []),
       supervisor(LtsePoc.Exchange.Trade.WorkerSupervisor, []),

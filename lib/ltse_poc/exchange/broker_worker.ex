@@ -113,7 +113,8 @@ defmodule LtsePoc.Exchange.Trade.BrokerWorker do
 
   ## quick benchmark
   Inserts:
-  On Core 2 Duo - 100k inserts of random prices between 1-1e6 is 0.35 seconds into gb_tree
+  On Core 2 Duo - 100k inserts of random prices between 1-1e6 is 0.35 seconds into gb_tree -> 3.5 us / insert
+  Expect a trade to be around 10-20 us -> 50k-100k req/s per stock with singleton strategy
 
 
   """
@@ -172,7 +173,8 @@ defmodule LtsePoc.Exchange.Trade.BrokerWorker do
 
   # returns the new state tree 
   # TODO - array_of_bids is is appending on cons cell instead of prepending.
-  # This is bad for performance as elixir has no damn tail pointer.
+  # This is bad for performance as there is no damn tail pointer.
+  # Need to reverse the list above when parsing
   def insert_bids_buy({id,price,volume}, state_tree_buys) do
     case :gb_trees.lookup(price, state_tree_buys) do
       :none -> :gb_trees.insert(price, [{id, volume}], state_tree_buys)
@@ -182,4 +184,74 @@ defmodule LtsePoc.Exchange.Trade.BrokerWorker do
                                     )
     end
   end
+
+  # Only implementing the insert, assuming no matches from the sell side as the bench should be equivalent
+  def handle_call(:buy, {id, price, volume}, _from, {stock_name, state_tree_buys, state_tree_sells} ) do
+    new_state_tree_buys = insert_bids_buy({id, price, volume}, state_tree_buys)
+    # TODO - Journal the addition to the state_tree - either here, the caller, or GenFlow
+    {:reply, {:processed}, {stock_name, new_state_tree_buys, state_tree_sells}}
+  end
+
+  def handle_call(:sell, {sell_id, price, volume}, _from, {stock_name, state_tree_buys, state_tree_sells} ) do
+    # Ugh, turns out Enum.reduce doesn't handle the iter function from :gb_trees
+    # Have to write two custom loop functions and handle the exit conditions from each 
+    iter = :gb_trees.iterator_from(price, state_tree_buys)
+    {volume_left, transactions, state_tree_buys} = find_buyer_tree_iter({sell_id, price, volume}, [], state_tree_buys, iter)
+    # TODO - send off the transactions somewhere
+    # TODO - volume_left > 0 -> add to the seller tree or returned in the :processed
+    {:reply, {:processed}, {stock_name, state_tree_buys, state_tree_sells}}
+  end
+
+  # This processes one array of volume bids
+  # transactions is an array of completed buys that we should associate with the sell
+  # returns volume_left , transactions_array, the adjusted buys_array for whatever price it was at
+  # TODO - put this in spec format
+  def find_buyer_at_price( {sell_id, price, volume}, transactions, [] ) do
+      {volume, transactions, [] } # stop condition
+  end
+  def find_buyer_at_price({sell_id, price, volume}, transactions, [{bid_id, bid_volume} | t] = buys_array ) do
+    cond do 
+      # not sure what a transaction is supposed to look like yet
+      # but let's say it is of form {sell_id, bid_id, price, volume}
+      bid_volume > volume -> { 0, # nothing left to sell
+                               [ { sell_id, bid_id, price, volume } | transactions], # add it to transactions
+                               [ {bid_id, bid_volume - volume} | t ] # the buyer still wants to buy more
+                             }
+      bid_volume <= volume -> find_buyer_at_price(
+                                {sell_id, price, volume - bid_volume}, # seller still needs to keep selling
+                                [ {sell_id, bid_id, price, bid_volume} | transactions ], # add it to transactions
+                                t  # head is completed
+                              )
+    end
+  end
+
+  # returns volume_left, transactions, state_tree_buys
+  def find_buyer_tree_iter({sell_id, price, volume}, transactions, state_tree_buys, iter) do
+    case :gb_trees.next(iter) do
+      {price_buy, array_transact_buys, iter} -> 
+      #IO.inspect "Searching on #{price_buy}"
+        {volume_left, transactions, array_transact_buys} = 
+          find_buyer_at_price({sell_id, price, volume}, transactions, array_transact_buys)
+          #IO.inspect "vol_left = #{volume_left}, trans = #{transactions}, array = #{array_transact_buys}"
+        cond do
+          # success
+          volume_left == 0 ->
+            new_state_tree_buys =
+              case array_transact_buys do
+                [] -> :gb_trees.delete(price_buy, state_tree_buys)
+                _ -> :gb_trees.update(price_buy, array_transact_buys, state_tree_buys)
+              end
+            { 0, transactions, new_state_tree_buys}
+          # go to the next acceptable price - second exit condition of find_buyer_at_price
+          volume_left > 0 and array_transact_buys == [] -> 
+            new_state_tree_buys = :gb_trees.delete(price_buy, state_tree_buys)
+            find_buyer_tree_iter({sell_id, price, volume_left}, transactions, new_state_tree_buys, iter)
+        end
+      :none -> 
+         # TODO - caller add the unfulfilled sale to seller tree on return
+         { volume, transactions, state_tree_buys }
+    end
+  end
+
+
 end

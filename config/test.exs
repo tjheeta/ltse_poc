@@ -10,10 +10,18 @@ config :ltse_poc, LtsePocWeb.Endpoint,
 config :logger, level: :warn
 
 # Configure your database
+#config :ltse_poc, LtsePoc.Repo,
+#  adapter: Ecto.Adapters.Postgres,
+#  username: "postgres",
+#  password: "postgres",
+#  database: "ltse_poc_test",
+#  hostname: "localhost",
+#  pool: Ecto.Adapters.SQL.Sandbox
 config :ltse_poc, LtsePoc.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
+  username: "testuser",
+  password: "testpass",
   database: "ltse_poc_test",
-  hostname: "localhost",
+  hostname: "10.0.2.99",
+  port: 5433,
   pool: Ecto.Adapters.SQL.Sandbox
