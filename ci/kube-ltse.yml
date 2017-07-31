@@ -1,0 +1,50 @@
+apiVersion: apps/v1beta1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ltse-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: ltse_poc
+    spec:
+      containers:
+      - name: ltse
+        image: tjheeta/ltse_poc
+        ports:
+        - containerPort: 4000
+        env:
+        - name: PORT
+          value: "4000"
+        - name: REPLACE_OS_VARS
+          value: "true"
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        #command: ["/opt/app/bin/ltse_poc"]
+        #args: ["console"]
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ltse-service
+  labels:
+    app: ltse_poc
+spec:
+  selector:
+    app: ltse_poc
+  ports:
+   - protocol: TCP
+     port: 80
+     targetPort: 4000

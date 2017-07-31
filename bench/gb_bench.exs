@@ -20,7 +20,8 @@ defmodule GbBench do
                end)
              end)
 
-  # gb insert 1   1831842.00 µs/op => 1831842 / 500000 = 3.66368 µs per elements
+  # gb insert (core 2 duo)  1831842.00 µs/op => 1831842 / 500000 = 3.66 µs per elements
+  # gb insert (aws)   1137797.00 µs/op => 1137797.00 / 500000 = 2.27 µs per elements
   bench "gb insert" do
     Enum.reduce(@list, :gb_trees.empty(), fn(id, tree) ->
       Enum.reduce(@prices, tree, fn(price, tree) ->
@@ -29,11 +30,24 @@ defmodule GbBench do
     end)
   end
 
+  # gb search (aws)          search        10000000   0.64 µs/op
   bench "search" do 
     iter = :gb_trees.iterator_from(4, @state_buy)
-    {volume_left, transactions, state_tree_buys_new} = LtsePoc.Exchange.Trade.BrokerWorker.find_buyer_tree_iter({100001, 3.5, 100}, [], @state_buy, iter) # search         1000000   1.61 µs/op
-    #{volume_left, transactions, state_tree_buys_new} = LtsePoc.Exchange.Trade.BrokerWorker.find_buyer_tree_iter({100001, 3.5, 10000}, [], @state_buy, iter) # search           50000   35.06 µs/op
-    #{volume_left, transactions, state_tree_buys_new} = LtsePoc.Exchange.Trade.BrokerWorker.find_buyer_tree_iter({100001, 3.5, 100000}, [], @state_buy, iter) # search           10000   273.70 µs/op - 10x more, makes sense should be linear as asking for more volume
+    # (core 2 duo)  search         1000000   1.61 µs/op
+    # (core 2 duo)  search         1000000   2.18 µs/op
+    # aws           search        10000000   0.84 µs/op
+    # aws           search        10000000   0.64 µs/op
+    # aws           search        10000000   1.27 µs/op
+    {volume_left, transactions, state_tree_buys_new} = LtsePoc.Exchange.Trade.BrokerWorker.find_buyer_tree_iter({100001, 3.5, 100}, [], @state_buy, iter) 
+
+    # (core 2 duo) search           50000   35.06 µs/op
+    # (aws)        search          100000   15.14 µs/op
+    #{volume_left, transactions, state_tree_buys_new} = LtsePoc.Exchange.Trade.BrokerWorker.find_buyer_tree_iter({100001, 3.5, 10000}, [], @state_buy, iter) 
+
+    # (core 2 duo ) search           10000   273.70 µs/op - 10x more, makes sense should be linear as asking for more volume
+    # aws           search           10000   167.91 µs/op
+    # aws           search           10000   191.01 µs/op
+    #{volume_left, transactions, state_tree_buys_new} = LtsePoc.Exchange.Trade.BrokerWorker.find_buyer_tree_iter({100001, 3.5, 100000}, [], @state_buy, iter) 
     #IO.inspect length(transactions)
   end
 

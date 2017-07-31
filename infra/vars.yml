@@ -1,0 +1,19 @@
+# internal 
+kops_create: false
+kops_delete: false
+
+# for kops
+kops_state_store_name: kops-test1-state-store
+kops_cloud: aws
+kops_zones: us-west-2a
+kops_name: kube-test.yourdomain.net # override in vault
+k8s_version: 1.6.4
+k8s_network: 10.240.0.0/16
+k8s_master_size: m3.large
+k8s_worker_size: m4.large
+k8s_count: 3
+
+# vault contains
+#aws_access_key: access
+#aws_secret_key: secret
+#aws_region: 

@@ -1,0 +1,35 @@
+- hosts: localhost
+  environment:
+      PATH: "{{ ansible_env.PATH }}:~/annex/bin"
+  vars_files:
+      - vars.yml
+      - vault.yml
+
+  tasks:
+    - s3_bucket:
+        name: "{{ kops_state_store_name }}"
+        versioning: yes
+        region: "{{ aws_region }}"
+      when: kops_create
+
+    - shell: |
+        ~/annex/bin/kops create cluster {{ kops_name }} --cloud="{{ kops_cloud }}"  \
+          --state="s3://{{ kops_state_store_name }}" \
+          --zones="{{ kops_zones }}" \
+          --kubernetes-version="{{ k8s_version }}" \
+          --node-count="{{ k8s_count }}" \
+          --node-size="{{ k8s_worker_size }}" \
+          --master-size="{{ k8s_master_size }}" \
+          --network-cidr="{{ k8s_network }}" \
+      ignore_errors: true
+      when: kops_create
+
+    - command: |
+        ~/annex/bin/kops update cluster {{ kops_name }}  --state="s3://{{ kops_state_store_name }}" --yes
+      when: kops_create
+
+    - command: | 
+        ~/annex/bin/kops delete cluster {{ kops_name }}  --state="s3://{{ kops_state_store_name }}" --yes
+      when: kops_delete
+
+

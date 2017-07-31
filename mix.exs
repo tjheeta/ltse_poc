@@ -38,12 +38,14 @@ defmodule LtsePoc.Mixfile do
       {:phoenix_ecto, "~> 3.2"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 2.10"},
-      {:phoenix_live_reload, "~> 1.0", only: :dev},
+      {:phoenix_live_reload, "~> 1.0", only: [:dev, :kube]},
       {:libcluster, "~> 2.1"},
       {:swarm, "~> 3.0"},
       {:gettext, "~> 0.11"},
-      {:benchee, "~> 0.9", only: :dev},
+      {:benchee, "~> 0.9", only: [:dev, :kube]},
       {:benchfella, "~> 0.3.0", only: :dev},
+      {:distillery, "~> 1.4"},
+      #{:mix_docker, "~> 0.5.0"},
       {:cowboy, "~> 1.0"}
     ]
   end

@@ -7,12 +7,12 @@ use Mix.Config
 # watchers to your application. For example, we use it
 # with brunch.io to recompile .js and .css sources.
 config :ltse_poc, LtsePocWeb.Endpoint,
-  http: [port: 4000],
-  debug_errors: true,
-  code_reloader: true,
-  check_origin: false,
-  watchers: [node: ["node_modules/brunch/bin/brunch", "watch", "--stdin",
-                    cd: Path.expand("../assets", __DIR__)]]
+  http: [port: {:system, "PORT"}],
+  url: [host: "localhost", port: {:system, "PORT"}], # This is critical for ensuring web-sockets properly authorize.
+  cache_static_manifest: "priv/static/manifest.json",
+  server: true,
+  root: "."
+
 
 # ## SSL Support
 #
@@ -49,18 +49,13 @@ config :logger, :console, format: "[$level] $message\n"
 config :phoenix, :stacktrace_depth, 20
 
 config :libcluster,
- topologies: [
-   gossip_example: [
-     strategy: Cluster.Strategy.Gossip,
-     config: [
-       port: 45892,
-       if_addr: {0,0,0,0},
-       multicast_addr: {230,1,1,251},
-       # a TTL of 1 remains on the local network,
-       # use this to change the number of jumps the
-       # multicast packets will make
-       multicast_ttl: 1]]
- ]
+  topologies: [
+    k8s_example: [
+      strategy: Cluster.Strategy.Kubernetes,
+      config: [
+        #kubernetes_selector: "app=<%= release_name %>",
+        kubernetes_selector: "app=ltse_poc",
+        kubernetes_node_basename: "ltse_poc"]]]
 
 # Configure your database
 config :ltse_poc, LtsePoc.Repo,

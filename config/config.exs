@@ -23,20 +23,8 @@ config :logger, :console,
   level: :warn,
   metadata: [:request_id]
 
-# disabling libcluster for now
-config :libcluster,
- topologies: [
-   gossip_example: [
-     strategy: Cluster.Strategy.Gossip,
-     config: [
-       port: 45892,
-       if_addr: {0,0,0,0},
-       multicast_addr: {230,1,1,251},
-       # a TTL of 1 remains on the local network,
-       # use this to change the number of jumps the
-       # multicast packets will make
-       multicast_ttl: 1]]]
 
+config :mix_docker, image: "tjheeta/ltse_poc"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
