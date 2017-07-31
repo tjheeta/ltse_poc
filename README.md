@@ -31,16 +31,16 @@ Architecture Idea:
   - Have no idea about suitable return values/codes.
 
 POC Checkpoints:
-1) Deploy onto Kubernetes
-2) Verify that the ring hash kill/respawn actions work (no need for multiple fsm running)
-3) Bench the stock_fsm for some hopefully reasonable values.
+- [x] Deploy onto Kubernetes
+- [x] Verify that the ring hash kill/respawn actions work (no need for multiple fsm running)
+- [x] Bench the stock_fsm for some hopefully reasonable values.
      - Results on a 2008 Core 2 Duo - 3.5 µs for each insert
                                     - 1.6 µs for each match - probably will take 5-10 to make a trade (depends on many variables)
      - Results on a m4.2xlarge      ~ 2 µs for each insert
                                     ~ 1 µs for each match - probably will take 5-10 to make a trade (depends on many variables)
        Which is much better than original estimate - the stock_fsm at 3 to 10 µs => 100k to 300k qps for a single stock on a singleton
-4) GenStage to read from a file of events -> parsed transactions. Use same interface for QA / Event replay
-5) Journaling / replay / crash recovery actions.
+- [] GenStage to read from a file of events -> parsed transactions. Use same interface for QA / Event replay
+- [] Journaling / replay / crash recovery actions.
 
 Flow:
 - A request comes in it is either buy/sell/short/stop a particular stock at a given number of units. Could use GenStage to do this and include journal/replication steps.
