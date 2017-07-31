@@ -3,7 +3,7 @@
 * 100k 100-byte messages per second (ignoring network for now since that will be ms order-of-magnitude)
 * All messages must be processed in-order
 
-Architecture Idea:
+## Architecture Idea:
 * Stock_FSM 
   - Partition by stock - single process for each stock that actually does the matching/transaction for the bids and holds state
   - The state machine is completely deterministic from a series of events. That means starting at an initial condition and knowledge of the subsequent events, the state at time t is fully known. This means there can be multiple fsm's of the same stock running at the same time giving a result, so that this has built in HA (not withstanding a bug in the FSM, which would take down all units). Would need to filter out repetitive results or just elect a master.
@@ -30,7 +30,7 @@ Architecture Idea:
 * Return codes
   - Have no idea about suitable return values/codes.
 
-POC Checkpoints:
+## POC Checkpoints:
 - [x] Deploy onto Kubernetes
 - [x] Verify that the ring hash kill/respawn actions work (no need for multiple fsm running)
 - [x] Bench the stock_fsm for some hopefully reasonable values.
@@ -39,10 +39,10 @@ POC Checkpoints:
      - Results on a m4.2xlarge      ~ 2 µs for each insert
                                     ~ 1 µs for each match - probably will take 5-10 to make a trade (depends on many variables)
        Which is much better than original estimate - the stock_fsm at 3 to 10 µs => 100k to 300k qps for a single stock on a singleton
-- [] GenStage to read from a file of events -> parsed transactions. Use same interface for QA / Event replay
-- [] Journaling / replay / crash recovery actions.
+- [ ] GenStage to read from a file of events -> parsed transactions. Use same interface for QA / Event replay
+- [ ] Journaling / replay / crash recovery actions.
 
-Flow:
+## Flow:
 - A request comes in it is either buy/sell/short/stop a particular stock at a given number of units. Could use GenStage to do this and include journal/replication steps.
   1) Journal the request. Once it is journaled, a 200 can be sent that the order has been submitted. This is the official timestamp that is used from the webserver initial request that gets journaled (or could just use the time from the journal).
   2) Parse the request, look up the pid for the processor of stock X.
@@ -63,7 +63,7 @@ Flow:
  4) Record some transaction for later verification / reconciliation
  5) Return/send a response?
 
-# Notes
+## Notes
 mix phx.gen.json Exchange Trade trades email:string:unique stock:integer volume:integer price:float
 
 Sets up multiple nodes connected together and starts a worker. Worker can move around and restart on failure.
